@@ -4,45 +4,67 @@ Este projeto é uma implementação de um menu interativo em Python, permitindo 
 
 ## 🚀 Começando
 
-Essas instruções permitirão que você obtenha uma cópia do projeto em operação na sua máquina local para fins de desenvolvimento e teste.
-
-Consulte **[Implantação](#-implanta%C3%A7%C3%A3o)** para saber como implantar o projeto.
+Essas instruções permitirão que você compreenda como utilizar a classe `Menu` para criar um menu interativo em seu aplicativo Python.
 
 ### 📋 Pré-requisitos
 
-Para instalar o software, você precisa do Python instalado em sua máquina.
+Para utilizar esta classe, você precisa do Python instalado em sua máquina, além de algumas bibliotecas:
 
-```bash
-# Verifique se o Python está instalado
-python --version
-```
+* `tabulate`: Para formatar as opções do menu em uma tabela.
+* `readchar`: Para capturar entradas do teclado.
 
-### 🔧 Instalação
+### 🔧 Uso
 
-Uma série de exemplos passo-a-passo que informam o que você deve executar para ter um ambiente de desenvolvimento em execução.
+1. **Importação da Classe**
 
-1. Clone o repositório:
-   ```bash
-   git clone https://github.com/seu_usuario/seu_projeto.git
-   ```
-2. Navegue até o diretório do projeto:
-   ```bash
-   cd seu_projeto
-   ```
-3. Instale as dependências:
-   ```bash
-   pip install -r requirements.txt
+   Primeiro, importe a classe `Menu` no seu código:
+
+   ```python
+   from seu_modulo import Menu
    ```
 
-E repita:
+2. **Instância da Classe**
 
-```bash
-# Para garantir que tudo está funcionando corretamente
-python -m menu
-```
+   Crie uma instância da classe `Menu`. Você pode definir se deseja inserir o índice da opção selecionada na chamada da função e se o menu deve terminar após uma opção ser selecionada.
 
-Termine com um exemplo de como usar o menu interativo:
+   ```python
+   menu = Menu(insert_index=True, end_with_select=True)
+   ```
 
-```bash
-python menu.py
-```
+3. **Definição de Opções de Menu**
+
+   Use o decorador `@menu.show(name)` para registrar funções como opções no menu. O `name` é o texto que aparecerá para o usuário.
+
+   ```python
+   @menu.show("Opção 1")
+   def opcao1():
+       print("Você selecionou a Opção 1!")
+
+   @menu.show("Opção 2")
+   def opcao2():
+       print("Você selecionou a Opção 2!")
+   ```
+
+4. **Início do Menu**
+
+   Para iniciar o menu, chame o método `start()` na instância do menu:
+
+   ```python
+   menu.start()
+   ```
+
+   Durante a execução, os usuários poderão navegar pelas opções usando as teclas `W` (cima), `S` (baixo), `A` (esquerda), `D` (direita) e `Enter` para selecionar uma opção. A tecla `Q` é usada para sair do menu.
+
+## ⚙️ Interação com o Menu
+
+- **Navegação**: Os usuários podem usar as teclas `W` e `S` para mover-se para cima e para baixo entre as opções do menu.
+- **Seleção**: Ao pressionar `Enter`, a função associada à opção selecionada será executada.
+- **Sair**: Pressione `Q` para sair do menu.
+
+## 🛠️ Construído com
+
+Mencione as ferramentas que você usou para criar seu projeto.
+
+* [Python](https://www.python.org/) - A linguagem de programação usada
+* [tabulate](https://pypi.org/project/tabulate/) - Usada para formatar tabelas
+* [readchar](https://pypi.org/project/readchar/) - Usada para ler entradas do teclado
