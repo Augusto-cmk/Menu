@@ -1,4 +1,4 @@
-# Menu
+## Menu
 
 Este projeto é uma implementação de um menu interativo em Python, permitindo que os usuários naveguem por opções usando o teclado.
 
@@ -20,7 +20,7 @@ Para utilizar esta classe, você precisa do Python instalado em sua máquina, al
    Primeiro, importe a classe `Menu` no seu código:
 
    ```python
-   from seu_modulo import Menu
+   from terminal_manu.common import Menu
    ```
 
 2. **Instância da Classe**
