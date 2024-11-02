@@ -1,20 +1,18 @@
 import os
 import platform
 import signal
-
 import readchar
 from tabulate import tabulate
 
 
 class Menu:
-    def __init__(self, fluxo: dict, options: list[str], parameters: list = [], n_columns=3, insert_index=False,
-                 end_with_select=False):
+    def __init__(self, insert_index=False, end_with_select=False):
         """
-        fluxo: dict map to indicate the function that have executed, when selected
-        options: the list name of options of your function
-        parameters: list of parameters that you may input on all of functions on the fluxo
-        insert_index: insert the index of selection on the function
-        end_with_select: end of Menu, with selected an option
+        Initialize the Menu instance.
+
+        Parameters:
+        insert_index (bool): Whether to insert the index of the selected option in the function call.
+        end_with_select (bool): Whether to end the menu after an option is selected.
         """
         signal.signal(signal.SIGINT, self.__exit)
         if platform.system() == 'Darwin':  # macOS
@@ -24,21 +22,35 @@ class Menu:
             self.enter, self.command = ('\r', 'cls')
         else:  # Linux and others
             self.enter, self.command = ('\n', 'clear')
-        self.fluxo = fluxo
-        self.fluxo[len(fluxo.keys()) + 1] = self.__exit
-        self.options = options
-        self.options.append("Exit")
-        self.selected_option = 0
-        os.system(self.command)
-        self.parameters = parameters
+        self.fluxo = {}
+        self.__parameters = {}
+        self.__selected_option = 0
         self.execute = True
         self.insert_index = insert_index
         self.end_with_select = end_with_select
-        self.n_columns = n_columns
-        self.main()
+        self.n_columns = 1
 
+    def show(self, name: str):
+        """
+        Decorator to register a function in the menu.
+
+        Parameters:
+        name (str): The name to be used for the menu option.
+        """
+        def call(func):
+            def wrapper(*args, **kwargs):
+                self.fluxo[name] = func
+                if name not in self.__parameters.keys():
+                    self.__parameters[name] = {'args': args, 'kwargs': kwargs}
+                else:
+                    raise ValueError(f"This name '{name}' has already existed when calling {func.__name__}")
+            return wrapper
+        return call
 
     def __menu(self):
+        """
+        Display the menu options in a formatted table.
+        """
         os.system(self.command)
         controls = [
             ["W", "Move up"],
@@ -46,69 +58,93 @@ class Menu:
             ["S", "Move down"],
             ["D", "Move right"],
             ["Enter", "Select option"],
-            ["E", "Show terminal function"],
             ["Q", "Exit"]
         ]
 
-        num_options = len(self.options)
-        column_height = (num_options + self.n_columns - 1) // self.n_columns
+        num_options = len(self.fluxo.keys())
+        max_options_per_column = 6
+        num_columns = (num_options + max_options_per_column - 1) // max_options_per_column
 
-        # Criando a tabela para as opções
-        options_table = [['' for _ in range(self.n_columns)] for _ in range(column_height)]
-        for i in range(column_height):
-            for j in range(self.n_columns):
-                index = i + j * column_height
-                if index < num_options:
-                    option = self.options[index]
-                    if index == self.__selected_option:
-                        options_table[i][j] = f"\033[1;37;42m[*] {option}\033[m"
-                    else:
-                        options_table[i][j] = f"[ ] {option}"
+        # Create the table for the options
+        options_table = [[] for _ in range(max_options_per_column)]
+        options = list(self.__parameters.keys())
 
-        # Combinar tabelas lado a lado
+        for idx, option in enumerate(options):
+            row = idx % max_options_per_column
+            if idx == self.__selected_option:
+                options_table[row].append(f"\033[1;37;42m[*] {option}\033[m")
+            else:
+                options_table[row].append(f"[ ] {option}")
+
+        for row in options_table:
+            while len(row) < num_columns:
+                row.append("")
+
         combined_table = []
         for i in range(max(len(controls), len(options_table))):
             control_row = controls[i] if i < len(controls) else ["", ""]
-            options_row = options_table[i] if i < len(options_table) else [""] * self.n_columns
+            options_row = options_table[i] if i < len(options_table) else [""] * num_columns
             combined_table.append(control_row + ["|"] + options_row)
 
-        # Printando a tabela combinada
-        header_options = ["" for i in range(len(self.options))]
+        # Print the combined table
+        header_options = ["" for _ in range(num_columns)]
         print(tabulate(combined_table, headers=["Key", "Action"] + ["|"] + header_options, tablefmt="simple_grid"))
 
-    def main(self):
-        num_options = len(self.options)
-        column_height = (num_options + self.n_columns - 1) // self.n_columns
-        while self.execute:
-            self.__menu()
-            key = readchar.readchar()
-            if key == 'w':  # Sobe uma linha
-                self.__selected_option = (self.__selected_option - 1) % num_options
-            elif key == 's':  # Desce uma linha
-                self.__selected_option = (self.__selected_option + 1) % num_options
-            elif key == 'a':  # Move uma coluna à esquerda
-                if self.__selected_option < column_height:
-                    self.__selected_option = (self.__selected_option - column_height) % num_options
-                else:
-                    self.__selected_option -= column_height
-            elif key == 'd':  # Move uma coluna à direita
-                if self.__selected_option + column_height >= num_options:
-                    self.__selected_option = (self.__selected_option + column_height) % num_options
-                else:
-                    self.__selected_option += column_height
-            elif key == self.enter:
-                if self.insert_index:
-                    self.fluxo[self.selected_option + 1](self.selected_option, *self.parameters)
-                    if self.end_with_select:
-                        self.execute = False
-                    if self.execute:
-                        input("Any-> Voltar")
-                else:
-                    self.fluxo[self.selected_option + 1](*self.parameters)
-                    if self.end_with_select:
-                        self.execute = False
-                    if self.execute:
-                        input("Any-> Voltar")
+    def start(self):
+        """
+        Start the menu loop, allowing user interaction to select options.
+        """
+        num_options = len(self.__parameters.keys())
+        max_options_per_column = 6
+        num_columns = (num_options + max_options_per_column - 1) // max_options_per_column
+        column_height = max_options_per_column
 
-    def __exit(self, *parameters):
+        if num_options > 0:
+            while self.execute:
+                self.__menu()
+                key = readchar.readchar()
+                if key == 'w':
+                    self.__selected_option = (self.__selected_option - 1) % num_options
+                elif key == 's':
+                    self.__selected_option = (self.__selected_option + 1) % num_options
+                elif key == 'a':
+                    current_col = self.__selected_option // column_height
+                    if current_col > 0:
+                        self.__selected_option -= column_height
+                    else:
+                        self.__selected_option = (num_columns - 1) * column_height + (self.__selected_option % column_height)
+                        if self.__selected_option >= num_options:
+                            self.__selected_option = num_options - 1
+                elif key == 'd':
+                    current_col = self.__selected_option // column_height
+                    if current_col < num_columns - 1:
+                        self.__selected_option += column_height
+                        if self.__selected_option >= num_options:
+                            self.__selected_option = num_options - 1
+                    else:
+                        self.__selected_option %= column_height
+                elif key == self.enter:
+                    name = list(self.fluxo.keys())[self.__selected_option]
+                    if self.insert_index:
+                        self.fluxo[name](self.__selected_option, *self.__parameters[name]['args'], **self.__parameters[name]['kwargs'])
+                        if self.end_with_select:
+                            self.execute = False
+                        if self.execute:
+                            input("Any-> Voltar")
+                    else:
+                        self.fluxo[name](*self.__parameters[name]['args'], **self.__parameters[name]['kwargs'])
+                        if self.end_with_select:
+                            self.execute = False
+                        if self.execute:
+                            input("Any-> Voltar")
+                elif key == 'q':
+                    self.__exit()
+        else:
+            print("Remember to call the method to input on menu; this menu is empty.")
+
+    def __exit(self):
+        """
+        Exit the menu and stop the execution loop.
+        """
         self.execute = False
+        os.system(self.command)
