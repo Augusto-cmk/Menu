@@ -1,4 +1,4 @@
-# Título do projeto
+# Menu
 
 Este projeto é uma implementação de um menu interativo em Python, permitindo que os usuários naveguem por opções usando o teclado.
 
@@ -33,14 +33,14 @@ Para utilizar esta classe, você precisa do Python instalado em sua máquina, al
 
 3. **Definição de Opções de Menu**
 
-   Use o decorador `@menu.show(name)` para registrar funções como opções no menu. O `name` é o texto que aparecerá para o usuário.
+   Use o decorador `@menu.show()` para registrar funções como opções no menu. O nome da função será o texto que aparecerá para o usuário.
 
    ```python
-   @menu.show("Opção 1")
+   @menu.show()
    def opcao1():
        print("Você selecionou a Opção 1!")
 
-   @menu.show("Opção 2")
+   @menu.show()
    def opcao2():
        print("Você selecionou a Opção 2!")
    ```
