@@ -30,7 +30,7 @@ class Menu:
         self.end_with_select = end_with_select
         self.n_columns = 1
 
-    def show(self, name: str):
+    def show(self):
         """
         Decorator to register a function in the menu.
 
@@ -39,11 +39,11 @@ class Menu:
         """
         def call(func):
             def wrapper(*args, **kwargs):
-                self.fluxo[name] = func
-                if name not in self.__parameters.keys():
-                    self.__parameters[name] = {'args': args, 'kwargs': kwargs}
+                self.fluxo[func.__name__] = func
+                if func.__name__ not in self.__parameters.keys():
+                    self.__parameters[func.__name__] = {'args': args, 'kwargs': kwargs}
                 else:
-                    raise ValueError(f"This name '{name}' has already existed when calling {func.__name__}")
+                    raise ValueError(f"This name '{func.__name__}' has already exist")
             return wrapper
         return call
 
