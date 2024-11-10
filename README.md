@@ -55,6 +55,17 @@ Para utilizar esta classe, você precisa do Python instalado em sua máquina, al
 
    Durante a execução, os usuários poderão navegar pelas opções usando as teclas `W` (cima), `S` (baixo), `A` (esquerda), `D` (direita) e `Enter` para selecionar uma opção. A tecla `Q` é usada para sair do menu.
 
+5. **Lista de opções**
+
+   Para utilizar o código como um seletor de opções cujos valores não são funções, pode ser usado o método 'options_selection'. A forma de uso é bem simples:
+
+   ```python
+   from terminal_menu.common import Menu
+
+   valor_selecionado = Menu().options_selection(['opcao1','opcao2'])
+   ```
+   A função irá retornar o valor selecionado pelo menu e irá encerrar imediatamente o menu de seleção
+
 ## ⚙️ Interação com o Menu
 
 - **Navegação**: Os usuários podem usar as teclas `W` e `S` para mover-se para cima e para baixo entre as opções do menu.

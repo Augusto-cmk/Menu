@@ -46,6 +46,27 @@ class Menu:
                     raise ValueError(f"This name '{func.__name__}' has already exist")
             return wrapper
         return call
+    
+    def options_selecion(self,options:list[str])->str:
+        """
+        Menu of list of data that you want to select, that isn't callable
+
+        Parameters:
+        options list[str]: list of options to select
+
+        Return:
+        value selected on menu
+        """
+        selection = [None]
+        self.insert_index = True
+        self.end_with_select = True
+        def option_selected(index):
+            selection[0] = options[index]
+        
+        self.fluxo = {option:option_selected for option in options}
+        self.__parameters = {option:{'args':[],'kwargs':{}} for option in options}
+        self.start()
+        return selection[0]
 
     def __menu(self):
         """
